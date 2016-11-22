@@ -31,6 +31,8 @@ static NSString *const EVENT_HEARTBEAT = @"heartbeat";
 
 @implementation RNBackgroundGeolocation {
     NSMutableArray *currentPositionListeners;
+    NSDictionary *headers;
+    NSString *url;
 }
 
 @synthesize syncCallback, locationManager;
@@ -100,6 +102,12 @@ RCT_EXPORT_METHOD(configure:(NSDictionary*)config success:(RCTResponseSenderBloc
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *state = [locationManager configure:config];
+        NSString *url = config[@"url"];
+        NSDictionary *headers = config[@"headers"];
+        if (url && headers) {
+          self->url = [url copy];
+          self->headers = [headers copy];
+        }
         success(@[state]);
     });
 }
@@ -107,6 +115,12 @@ RCT_EXPORT_METHOD(configure:(NSDictionary*)config success:(RCTResponseSenderBloc
 RCT_EXPORT_METHOD(setConfig:(NSDictionary*)config success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     NSDictionary *state = [locationManager setConfig:config];
+    NSString *url = config[@"url"];
+    NSDictionary *headers = config[@"headers"];
+    if (url && headers) {
+      self->url = [url copy];
+      self->headers = [headers copy];
+    }
     success(@[state]);
 }
 
@@ -415,6 +429,7 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
             @"location": locationData
         };
         [self sendEvent:EVENT_GEOFENCE body:params];
+      [FOBackgroundGeolocation geoFenceEvent:params url:url headers:headers];
     };
 }
 
