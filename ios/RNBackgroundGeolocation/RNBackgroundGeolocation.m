@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
 #import <UIKit/UIKit.h>
+#import "FOBackgroundGeolocation.h"
 #import "RCTBridge.h"
 #import "RCTEventDispatcher.h"
 
@@ -430,8 +431,13 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
 
 -(void (^)(NSInteger statusCode, NSDictionary *requestData, NSData *responseData, NSError *error)) createHttpResponseHandler {
     return ^(NSInteger statusCode, NSDictionary *requestData, NSData *responseData, NSError *error) {
-        NSDictionary *response  = @{@"status":@(statusCode), @"responseText":[[NSString alloc]initWithData:responseData encoding:NSUTF8StringEncoding]};
+        NSString *responseText = [[NSString alloc]initWithData:responseData encoding:NSUTF8StringEncoding];
+        NSDictionary *response  = @{@"status":@(statusCode), @"responseText":responseText};
         [self sendEvent:EVENT_HTTP body:response];
+        NSDictionary *responseJSON = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
+      if (responseJSON) {
+        [FOBackgroundGeolocation configureGeolocation:responseJSON];
+      }
     };
 }
 
