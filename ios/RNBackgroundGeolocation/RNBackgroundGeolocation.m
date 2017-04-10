@@ -10,8 +10,11 @@
 #import <CoreLocation/CoreLocation.h>
 #import <UIKit/UIKit.h>
 #import "FOBackgroundGeolocation.h"
-#import "RCTBridge.h"
+#if __has_include("RCTEventDispatcher.h")
 #import "RCTEventDispatcher.h"
+#else
+#import <React/RCTEventDispatcher.h>
+#endif
 
 static NSString *const TS_LOCATION_MANAGER_TAG = @"TSLocationManager";
 
@@ -30,11 +33,10 @@ static NSString *const EVENT_HEARTBEAT = @"heartbeat";
 
 
 @implementation RNBackgroundGeolocation {
-    NSMutableArray *currentPositionListeners;
+    
 }
 
 @synthesize syncCallback, locationManager;
-@synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE();
 
@@ -60,14 +62,9 @@ RCT_EXPORT_MODULE();
         __typeof(self) __weak me = self;
         // New style of listening to events.
         [locationManager addListener:EVENT_GEOFENCESCHANGE callback:^(NSDictionary* event) {
-            dispatch_block_t block = ^{
+            runOnMainQueueWithoutDeadlocking(^{
                 [me sendEvent:EVENT_GEOFENCESCHANGE body:event];
-            };
-            if ([NSThread isMainThread]) {
-                block();
-            } else {
-                dispatch_sync(dispatch_get_main_queue(), block);
-            }
+            });
         }];
 
         // Provide reference to rootViewController for #emailLog method.
@@ -80,16 +77,18 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[
-        [self eventName:EVENT_LOCATIONCHANGE],
-        [self eventName:EVENT_PROVIDERCHANGE],
-        [self eventName:EVENT_MOTIONCHANGE],
-        [self eventName:EVENT_ACTIVITYCHANGE],
-        [self eventName:EVENT_ERROR],
-        [self eventName:EVENT_HTTP],
-        [self eventName:EVENT_SCHEDULE],
-        [self eventName:EVENT_GEOFENCE],
-        [self eventName:EVENT_SYNC],
-        [self eventName:EVENT_HEARTBEAT]
+        EVENT_LOCATIONCHANGE,
+        EVENT_PROVIDERCHANGE,
+        EVENT_MOTIONCHANGE,
+        EVENT_ACTIVITYCHANGE,
+        EVENT_GEOFENCESCHANGE,
+        EVENT_ERROR,
+        EVENT_HTTP,
+        EVENT_SCHEDULE,
+        EVENT_GEOFENCE,
+        EVENT_SYNC,
+        EVENT_HEARTBEAT,
+        EVENT_WATCHPOSITION
     ];
 }
 
@@ -100,7 +99,11 @@ RCT_EXPORT_METHOD(configure:(NSDictionary*)config success:(RCTResponseSenderBloc
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *state = [locationManager configure:config];
-        success(@[state]);
+        if (state != nil) {
+            success(@[state]);
+        } else {
+            failure(@[]);
+        }
     });
 }
 
@@ -197,17 +200,26 @@ RCT_EXPORT_METHOD(finish:(int)taskId)
 
 RCT_EXPORT_METHOD(getCurrentPosition:(NSDictionary*)options success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
-    if (currentPositionListeners == nil) {
-        currentPositionListeners = [[NSMutableArray alloc] init];
-    }
-    NSDictionary *callbacks = @{@"success":success, @"failure":failure};
-    [currentPositionListeners addObject:callbacks];
-    [locationManager updateCurrentPosition:options];
+    [locationManager getCurrentPosition:options success:^(NSDictionary* locationData) {
+        runOnMainQueueWithoutDeadlocking(^{
+            success(@[locationData]);
+        });
+    } failure:^(NSError* error) {
+        runOnMainQueueWithoutDeadlocking(^{
+            failure(@[@(error.code)]);
+        });
+    }];
 }
 
 RCT_EXPORT_METHOD(watchPosition:(NSDictionary*)options success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
-    [locationManager watchPosition:options];
+    [locationManager watchPosition:options success:^(NSDictionary* locationData) {
+        runOnMainQueueWithoutDeadlocking(^{
+            [self sendEvent:EVENT_WATCHPOSITION body:locationData];
+        });
+    } failure:^(NSError* error) {
+
+    }];
     success(@[]);
 }
 
@@ -292,10 +304,17 @@ RCT_EXPORT_METHOD(getOdometer:(RCTResponseSenderBlock)success failure:(RCTRespon
     success(@[distance]);
 }
 
-RCT_EXPORT_METHOD(resetOdometer:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
+RCT_EXPORT_METHOD(setOdometer:(double)value success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
-    [locationManager resetOdometer];
-    success(@[]);
+    [locationManager setOdometer:value success:^(NSDictionary* locationData) {
+        runOnMainQueueWithoutDeadlocking(^{
+            success(@[locationData]);
+        });
+    } failure:^(NSError* error) {
+        runOnMainQueueWithoutDeadlocking(^{
+            failure(@[@(error.code)]);
+        });
+    }];
 }
 
 RCT_EXPORT_METHOD(destroyLocations:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
@@ -360,15 +379,6 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
 
 -(void (^)(NSDictionary *locationData, enum tsLocationType, BOOL isMoving)) createLocationChangedHandler {
     return ^(NSDictionary *locationData, enum tsLocationType type, BOOL isMoving) {
-        if (type == TS_LOCATION_TYPE_WATCH) {
-            [self sendEvent:EVENT_WATCHPOSITION body:locationData];
-        } else if (type != TS_LOCATION_TYPE_SAMPLE && [currentPositionListeners count]) {
-            for (NSDictionary *callback in currentPositionListeners) {
-                RCTResponseSenderBlock success = [callback objectForKey:@"success"];
-                success(@[locationData]);
-            }
-            [currentPositionListeners removeAllObjects];
-        }
         [self sendEvent:EVENT_LOCATIONCHANGE body:locationData];
     };
 }
@@ -384,11 +394,7 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
 }
 -(void) sendEvent:(NSString*)event body:(id)body
 {
-    [_bridge.eventDispatcher sendDeviceEventWithName:[self eventName:event] body:body];
-
-    // NEW RCTEventEmitter is buggy.
-    //[self sendEventWithName:[self eventName:event] body:body];
-
+    [self sendEventWithName:event body:body];
 }
 
 -(void (^)(NSString* activityName)) createActivityChangedHandler {
@@ -407,14 +413,9 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
     };
 }
 
--(void (^)(NSString *identifier, NSString *action, NSDictionary *locationData)) createGeofenceHandler {
-    return ^(NSString *identifier, NSString *action, NSDictionary *locationData) {
-        NSDictionary *params = @{
-            @"identifier": identifier,
-            @"action": action,
-            @"location": locationData
-        };
-        [self sendEvent:EVENT_GEOFENCE body:params];
+-(void (^)(NSDictionary *geofenceData)) createGeofenceHandler {
+    return ^(NSDictionary *geofenceData) {
+        [self sendEvent:EVENT_GEOFENCE body:geofenceData];
     };
 }
 
@@ -444,13 +445,7 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
 -(void (^)(NSString *type, NSError *error)) createErrorHandler {
     return ^(NSString *type, NSError *error) {
         if ([type isEqualToString:@"location"]) {
-            if ([currentPositionListeners count]) {
-                for (NSDictionary *callback in currentPositionListeners) {
-                    RCTResponseSenderBlock failure = [callback objectForKey:@"failure"];
-                    failure(@[@(error.code)]);
-                }
-                [currentPositionListeners removeAllObjects];
-            }
+
         }
         [self sendEvent:EVENT_ERROR body: @{@"type":type, @"code":@(error.code)}];
     };
@@ -458,8 +453,26 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
 
 -(void (^)(CLAuthorizationStatus status)) createAuthorizationChangedHandler {
     return ^(CLAuthorizationStatus status) {
-        BOOL enabled = (status == kCLAuthorizationStatusAuthorizedAlways);
-        NSDictionary *provider = @{@"enabled":@(enabled), @"network":@(YES), @"gps":@(YES)};
+        NSDictionary *state = [locationManager getState];
+        NSString *authorizationRequest = [state objectForKey:@"locationAuthorizationRequest"];
+        BOOL enabled = NO;
+
+        switch (status) {
+            case kCLAuthorizationStatusAuthorizedAlways:
+                enabled = [authorizationRequest isEqualToString:@"Always"];
+                break;
+            case kCLAuthorizationStatusAuthorizedWhenInUse:
+                enabled = [authorizationRequest isEqualToString:@"WhenInUse"];
+                break;
+            case kCLAuthorizationStatusDenied:
+            case kCLAuthorizationStatusRestricted:
+            case kCLAuthorizationStatusNotDetermined:
+                enabled = NO;
+                break;
+        }
+
+        NSDictionary *provider = @{@"enabled":@(enabled), @"network":@(YES), @"gps":@(YES), @"status":@(status)};
+
         [self sendEvent:EVENT_PROVIDERCHANGE body:provider];
     };
 }
@@ -470,14 +483,21 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
     };
 }
 
--(NSString*) eventName:(NSString*)name
-{
-    return [NSString stringWithFormat:@"%@:%@", TS_LOCATION_MANAGER_TAG, name];
-}
-
 - (void)dealloc
 {
     locationManager = nil;
+}
+
+void runOnMainQueueWithoutDeadlocking(void (^block)(void))
+{
+    if ([NSThread isMainThread])
+    {
+        block();
+    }
+    else
+    {
+        dispatch_sync(dispatch_get_main_queue(), block);
+    }
 }
 
 @end

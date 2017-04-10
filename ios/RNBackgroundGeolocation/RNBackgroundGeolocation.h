@@ -12,9 +12,13 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <TSLocationManager/TSLocationManager.h>
 
-#import "RCTBridgeModule.h"
+#if __has_include("RCTEventEmitter.h")
+#import "RCTEventEmitter.h"
+#else
+#import <React/RCTEventEmitter.h>
+#endif
 
-@interface RNBackgroundGeolocation : NSObject <RCTBridgeModule>
+@interface RNBackgroundGeolocation : RCTEventEmitter
 
 @property (nonatomic, strong) TSLocationManager* locationManager;
 @property (nonatomic, strong) NSDictionary* syncCallback;

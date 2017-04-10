@@ -1,4 +1,41 @@
 # Change Log
+## [Unreleased]
+
+## [2.7.0] - 2017-03-09
+- [Fixed] iOS bug when composing geofence data for peristence.  Sometimes it appended a `location.geofence.location` due to a shared `NSDictionary`
+- [Changed] The licensing model of Android now enforces license only for **release** builds.  If an invalid license is configured while runningin **debug** mode, a Toast warning will appear **"BackgroundGeolocation is running in evaluation mode."**, but the plugin *will* work.
+- [Fixed] iOS bug with HTTP `401` handling.
+- [Fixed] Forgot to post updated (backwards-compatible) version of `#getCurrentPosition` method, re-arranging the order of params according to docs: `#getCurrentPosition(successFn, failureFn, config)`
+
+## [2.6.1] - 2017-03-01
+- [Changed] Refactor Settings Management.
+
+## [2.6.0] - 2017-02-22
+- [Fixed] `geofence` event not passing Geofence `#extras`.
+- [Fixed] iOS geofence identifiers containing ":" character were split and only the last chunk returned.  The plugin itself prefixes all geofences it creates with the string `TSGeofenceManager:` and the string-splitter was too naive.  Uses a `RegExp` replace to clear the plugin's internal prefix. 
+- [Changed] Refactored API Documentation
+- [Added] HTTP JSON template features.  See [HTTP Features](./docs/http.md).  You can now template your entire JSON request data sent to the server by the plugin's HTTP layer.
+
+## [2.4.3] - 2017-02-07
+- [Fixed] Incorrect `peerDependencies` specified `react-native >= 0.40.0`
+
+## [2.4.2] - 2017-02-07
+- [Changed] Module now works for all versions of react-native, both pre and post `0.40.0`.
+
+## [2.4.1] - 2017-01-16
+- [Fixed] Fix issue with Location Authorization alert popup up when not desired.
+
+## [2.4.0] - 2017-01-11
+- [Fixed] Support for `react-native-0.40.0`
+
+## [2.3.0] - 2017-01-09
+- [Added] Ability to provide optional arbitrary meta-data `extras` on geofences.
+- [Changed] Location parameters `heading`, `accuracy`, `odometer`, `speed`, `altitude`, `altitudeAccuracy` are now fixed at 2 decimal places.
+- [Changed] When adding a geofence (either `#addGeofence` or `#addGeofences`), if a geofence already exists with the provided `identifier`, the plugin will first destroy the existing one before creating the new one.what was configured.
+- [Fixed] Improve odometer accuracy.  Introduce `desiredOdometerAccuracy` for setting a threshold of location accuracy for calculating odometer.  Any location having `accuracy > desiredOdometerAccuracy` will not be used for odometer calculation.
+- [Fixed] When configured with a schedule, the Schedule parser wasn't ordering the schedule entries by start-time.  Since the scheduler seeks the first matching schedule-entry, it could fail to pick the latest entry.
+- [Changed] Add ability to set odometer to any arbitrary value.  Before, odometer could only be reset to `0` via `resetOdometer`.  The plugin now uses `setOdometer(Float, successFn, failureFn`.  `resetOdometer` is now just an alias for `setOdometer(0)`.  `setOdometer` will now internally perform a `#getCurrentPosition`, so it can know the exact location where the odometer was set at.  As a result, using `#setOdometer` is exactly like performing a `#getCurrentPosition` and the `success` / `failure` callbacks use the same method-signature, where the `success` callback is provided the `location`
+
 ## [1.6.0] - 2016-11-18
 - [Fixed] Logic bug in `TSGeofenceManager`; was not performing geospatial query when changing state from **MOVING -> STATIONARY**.
 - [Added] Geofences-only mode for both iOS and Android **BETA**.  Start geofences-only mode with method `#startGeofences`.
