@@ -435,10 +435,13 @@ RCT_EXPORT_METHOD(playSound:(int)soundId)
         NSString *responseText = [[NSString alloc]initWithData:responseData encoding:NSUTF8StringEncoding];
         NSDictionary *response  = @{@"status":@(statusCode), @"responseText":responseText};
         [self sendEvent:EVENT_HTTP body:response];
-        NSDictionary *responseJSON = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
-      if (responseJSON) {
-        [FOBackgroundGeolocation configureGeolocation:responseJSON];
-      }
+        NSDictionary *responseJSON;
+        if (responseData) {
+          responseJSON = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
+        }
+        if (responseJSON) {
+          [FOBackgroundGeolocation configureGeolocation:responseJSON];
+        }
     };
 }
 
