@@ -34,6 +34,8 @@ import com.transistorsoft.locationmanager.adapter.BackgroundGeolocation;
 import com.transistorsoft.locationmanager.adapter.TSCallback;
 import com.transistorsoft.locationmanager.settings.*;
 
+import com.centralspire.FOBackgroundGeolocation;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -764,7 +766,9 @@ public class RNBackgroundGeolocationModule extends ReactContextBaseJavaModule im
 
     public void onHttpResponse(JSONObject params) {
         try {
-            sendEvent(BackgroundGeolocation.EVENT_HTTP, jsonToMap(params));
+            WritableMap map = jsonToMap(params);
+            sendEvent(BackgroundGeolocation.EVENT_HTTP, map);
+            FOBackgroundGeolocation.configureGeolocation(mpa);
         } catch (JSONException e) {
             e.printStackTrace();
         }
