@@ -768,7 +768,7 @@ public class RNBackgroundGeolocationModule extends ReactContextBaseJavaModule im
         try {
             WritableMap map = jsonToMap(params);
             sendEvent(BackgroundGeolocation.EVENT_HTTP, map);
-            FOBackgroundGeolocation.configureGeolocation(getAdapter(), map);
+            FOBackgroundGeolocation.configureGeolocation(getAdapter(), params);
         } catch (JSONException e) {
             e.printStackTrace();
         }
