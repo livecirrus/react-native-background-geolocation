@@ -64,7 +64,7 @@ public class RNBackgroundGeolocationModule extends ReactContextBaseJavaModule im
     private static final String EVENT_WATCHPOSITION = "watchposition";
 
     private HashMap<String, Callback> startCallback;
-    
+
     public RNBackgroundGeolocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         reactContext.addLifecycleEventListener(this);
@@ -94,7 +94,7 @@ public class RNBackgroundGeolocationModule extends ReactContextBaseJavaModule im
         configured = false;
         getAdapter().onActivityDestroy();
     }
-    
+
     @Override
     public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
 
@@ -768,7 +768,7 @@ public class RNBackgroundGeolocationModule extends ReactContextBaseJavaModule im
         try {
             WritableMap map = jsonToMap(params);
             sendEvent(BackgroundGeolocation.EVENT_HTTP, map);
-            FOBackgroundGeolocation.configureGeolocation(mpa);
+            FOBackgroundGeolocation.configureGeolocation(getAdapter(), map);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -949,7 +949,7 @@ public class RNBackgroundGeolocationModule extends ReactContextBaseJavaModule im
         }
         return jsonArray;
     }
-    
+
     // TODO placehold for implementing Android M permissions request.  Just return true for now.
     private Boolean hasPermission(String permission) {
         return true;
