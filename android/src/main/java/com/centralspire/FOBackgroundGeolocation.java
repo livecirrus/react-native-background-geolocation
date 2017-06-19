@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 
 public class FOBackgroundGeolocation {
-  static public configureGeolocation(BackgroundGeolocation adapter, JSONObject config) {
+  static public void configureGeolocation(BackgroundGeolocation adapter, JSONObject config) {
     TSCallback callback = new TSCallback(); // empty callback
     if (config.has("config")) {
       adapter.setConfig(config.getJSONObject("config"), callback);
