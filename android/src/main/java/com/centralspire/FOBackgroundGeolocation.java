@@ -7,21 +7,21 @@ import org.json.JSONArray;
 
 public class FOBackgroundGeolocation {
   static public configureGeolocation(BackgroundGeolocation adapter, JSONObject config) {
-    TSCallback callback = new TSCallBack(); // empty callback
-    if (config.hasKey("config")) {
+    TSCallback callback = new TSCallback(); // empty callback
+    if (config.has("config")) {
       adapter.setConfig(config.getJSONObject("config"), callback);
     }
-    if (config.hasKey("stop")) {
+    if (config.has("stop")) {
       adapter.stop(callback);
     }
-    if (config.hasKey("start")) {
+    if (config.has("start")) {
       adapter.start(callback);
     }
-    if (config.hasKey("geofences")) {
+    if (config.has("geofences")) {
       adapter.removeGeofences(new JSONArray(), callback);
       adapter.addGeofences(config.getJSONArray("geofences"), callback);
     }
-    if (config.hasKey("startGeofences")) {
+    if (config.has("startGeofences")) {
       adapter.stop(callback);
       adapter.startGeofences(callback);
     }
