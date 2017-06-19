@@ -8,17 +8,17 @@ import org.json.JSONException;
 
 public class FOBackgroundGeolocation {
   static public void configureGeolocation(BackgroundGeolocation adapter, JSONObject response) {
-    if (response.has("responseText")) {
-      JSONObject config = response.getJSONObject("responseText");
-      TSCallback callback = new TSCallback() {
-        @Override
-        public void success(Object o) {
-        }
-        @Override
-        public void error(Object o) {
-        }
-      }; // empty callback
-      try {
+    try {
+      if (response.has("responseText")) {
+        JSONObject config = response.getJSONObject("responseText");
+        TSCallback callback = new TSCallback() {
+          @Override
+          public void success(Object o) {
+          }
+          @Override
+          public void error(Object o) {
+          }
+        }; // empty callback
         if (config.has("config")) {
           adapter.setConfig(config.getJSONObject("config"), callback);
         }
@@ -36,8 +36,8 @@ public class FOBackgroundGeolocation {
           adapter.stop(callback);
           adapter.startGeofences(callback);
         }
-      } catch (JSONException e) {
       }
+    } catch (JSONException e) {
     }
   }
 }
