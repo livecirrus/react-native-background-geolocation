@@ -10,7 +10,7 @@ public class FOBackgroundGeolocation {
   static public void configureGeolocation(BackgroundGeolocation adapter, JSONObject response) {
     try {
       if (response.has("responseText")) {
-        JSONObject config = response.getJSONObject("responseText");
+        JSONObject config = new JSONObject(response.getString("responseText"));
         TSCallback callback = new TSCallback() {
           @Override
           public void success(Object o) {
