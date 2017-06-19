@@ -18,8 +18,8 @@ public class FOBackgroundGeolocation {
       adapter.start(callback);
     }
     if (config.hasKey("geofences")) {
-      adapter.removeGeofences(new JSONArray(), callback)
-      adapter.addGeofences(config.getJSONArray("geofences"), callback)
+      adapter.removeGeofences(new JSONArray(), callback);
+      adapter.addGeofences(config.getJSONArray("geofences"), callback);
     }
     if (config.hasKey("startGeofences")) {
       adapter.stop(callback);
