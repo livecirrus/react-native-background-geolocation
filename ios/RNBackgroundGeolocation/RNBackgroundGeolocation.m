@@ -47,32 +47,36 @@ RCT_EXPORT_MODULE();
 {
     self = [super init];
     if (self) {
-        locationManager = [TSLocationManager sharedInstance];
-        locationManager.locationChangedBlock  = [self createLocationChangedHandler];
-        locationManager.motionChangedBlock    = [self createMotionChangedHandler];
-        locationManager.activityChangedBlock  = [self createActivityChangedHandler];
-        locationManager.heartbeatBlock        = [self createHeartbeatHandler];
-        locationManager.geofenceBlock         = [self createGeofenceHandler];
-        locationManager.syncCompleteBlock     = [self createSyncCompleteHandler];
-        locationManager.httpResponseBlock     = [self createHttpResponseHandler];
-        locationManager.errorBlock            = [self createErrorHandler];
-        locationManager.scheduleBlock         = [self createScheduleHandler];
-        locationManager.authorizationChangedBlock = [self createAuthorizationChangedHandler];
-
-        __typeof(self) __weak me = self;
-        // New style of listening to events.
-        [locationManager addListener:EVENT_GEOFENCESCHANGE callback:^(NSDictionary* event) {
-            tsRunOnMainQueueWithoutDeadlocking(^{
-                [me sendEvent:EVENT_GEOFENCESCHANGE body:event];
-            });
-        }];
-
-        // Provide reference to rootViewController for #emailLog method.
-        UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
-        locationManager.viewController = root;
     }
 
     return self;
+}
+
+- (void) initialize
+{
+  locationManager = [TSLocationManager sharedInstance];
+  locationManager.locationChangedBlock  = [self createLocationChangedHandler];
+  locationManager.motionChangedBlock    = [self createMotionChangedHandler];
+  locationManager.activityChangedBlock  = [self createActivityChangedHandler];
+  locationManager.heartbeatBlock        = [self createHeartbeatHandler];
+  locationManager.geofenceBlock         = [self createGeofenceHandler];
+  locationManager.syncCompleteBlock     = [self createSyncCompleteHandler];
+  locationManager.httpResponseBlock     = [self createHttpResponseHandler];
+  locationManager.errorBlock            = [self createErrorHandler];
+  locationManager.scheduleBlock         = [self createScheduleHandler];
+  locationManager.authorizationChangedBlock = [self createAuthorizationChangedHandler];
+  
+  __typeof(self) __weak me = self;
+  // New style of listening to events.
+  [locationManager addListener:EVENT_GEOFENCESCHANGE callback:^(NSDictionary* event) {
+    tsRunOnMainQueueWithoutDeadlocking(^{
+      [me sendEvent:EVENT_GEOFENCESCHANGE body:event];
+    });
+  }];
+  
+  // Provide reference to rootViewController for #emailLog method.
+  UIViewController *root = [[[[UIApplication sharedApplication] delegate] window] rootViewController];
+  locationManager.viewController = root;
 }
 
 - (NSArray<NSString *> *)supportedEvents {
@@ -98,6 +102,7 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(configure:(NSDictionary*)config success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
+        [self initialize];
         NSDictionary *state = [locationManager configure:config];
         if (state != nil) {
             success(@[state]);
