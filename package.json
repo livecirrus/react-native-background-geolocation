@@ -1,8 +1,7 @@
 {
   "name": "react-native-background-geolocation",
-  "version": "2.8.3",
-  "description": "The most sophisticated cross-platform background location-tracking & geofencing module with battery-conscious motion-detection intelligence",
-  "main": "RNBackgroundGeolocation.js",
+  "version": "2.9.4",
+  "description": "The most sophisticated cross-platform background location-tracking & geofencing module with battery-conscious motion-detection intelligence",  
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -27,9 +26,14 @@
     "url": "https://github.com/transistorsoft/react-native-background-geolocation/issues"
   },
   "rnpm": {
+    "commands": {
+      "postlink": "node_modules/react-native-background-geolocation/scripts/postlink.js",
+      "postunlink": "node_modules/react-native-background-geolocation/scripts/postunlink.js"
+    },
     "ios": {
       "sharedLibraries": [
-        "libsqlite3"
+        "libsqlite3",
+        "libz"
       ]
     }
   },
@@ -38,7 +42,7 @@
     "react-native": ">=0.28.0"
   },
   "dependencies": {
-    "react-native-background-fetch":"~2.0.3",
+    "react-native-background-fetch":"~2.2.0",
     "cocoa-lumberjack":"^3.0.3"
   }
 }

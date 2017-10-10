@@ -1,12 +1,37 @@
-const {NativeEventEmitter} = require('react-native');
-const { RNBackgroundGeolocation } = require('react-native').NativeModules;
-const EventEmitter = new NativeEventEmitter(RNBackgroundGeolocation);
+'use strict';
 
+import {
+  NativeEventEmitter,
+  NativeModules,
+  Platform
+} from "react-native"
+
+const { RNBackgroundGeolocation } = NativeModules;
+const EventEmitter = new NativeEventEmitter(RNBackgroundGeolocation);
 const TAG = "TSLocationManager";
 
-var emptyFn = function() {};
+const PLATFORM_ANDROID  = "android";
+const PLATFORM_IOS      = "ios";
 
-var API = {
+// Android permissions handler.  iOS manages this automatically within TSLocationManager
+let permissionsHandler = null;
+
+function withPermission(success, failure) {
+  if (!permissionsHandler) { return success(); }
+  permissionsHandler(success, failure);
+}
+
+let emptyFn = function() {};
+
+/**
+* Client log method
+*/
+function log(level, msg) {
+  RNBackgroundGeolocation.log(level, msg);
+}
+
+let API = {
+  subscriptions: [],
   events: [
     'heartbeat',
     'http',
@@ -18,7 +43,8 @@ var API = {
     'activitychange',
     'providerchange',
     'geofenceschange',
-    'watchposition'
+    'watchposition',
+    'powersavechange'
   ],
 
   LOG_LEVEL_OFF: 0,
@@ -39,6 +65,15 @@ var API = {
   AUTHORIZATION_STATUS_ALWAYS: 3,
   AUTHORIZATION_STATUS_WHEN_IN_USE: 4,
 
+  NOTIFICATION_PRIORITY_DEFAULT: 0,
+  NOTIFICATION_PRIORITY_HIGH: 1,
+  NOTIFICATION_PRIORITY_LOW: -1,
+  NOTIFICATION_PRIORITY_MAX: 2,
+  NOTIFICATION_PRIORITY_MIN: -2,
+
+  setPermissionsHandler(handler) {
+    permissionsHandler = handler;
+  },
   configure: function(config, success, failure) {
     success = success || emptyFn;
     failure = failure || emptyFn;
@@ -58,7 +93,8 @@ var API = {
     if (this.events.indexOf(event) < 0) {
       throw "RNBackgroundGeolocation: Unknown event '" + event + '"';
     }
-    return EventEmitter.addListener(event, callback);
+    this.subscriptions.push(EventEmitter.addListener(event, callback));
+    RNBackgroundGeolocation.addEventListener(event);
   },
   on: function(event, callback) {
     return this.addListener(event, callback);
@@ -67,15 +103,36 @@ var API = {
     if (this.events.indexOf(event) < 0) {
       throw "RNBackgroundGeolocation: Unknown event '" + event + '"';
     }
-    return EventEmitter.removeListener(event, callback);
+    var found = null;
+    for (var n=0,len=this.subscriptions.length;n<len;n++) {
+      var subscription = this.subscriptions[n];
+      if ((subscription.eventType === event) && (subscription.listener === callback)) {
+          found = subscription;
+          break;
+      }
+    }
+    if (found !== null) {
+      this.subscriptions.splice(this.subscriptions.indexOf(found), 1);
+      RNBackgroundGeolocation.removeListener(event);
+    }
+    EventEmitter.removeListener(event, callback);
+  },
+  removeAllListeners: function() {
+    for (var n=0,len=API.events.length;n<len;n++) {
+      EventEmitter.removeAllListeners(API.events[n]);
+    }
+    this.subscriptions = [];
+    RNBackgroundGeolocation.removeAllListeners();
   },
   un: function(event, callback) {
     this.removeListener(event, callback);
   },
-  start: function(success, failure) {
+  start: async function(success, failure) {
     success = success || emptyFn;
     failure = failure || emptyFn;
-    RNBackgroundGeolocation.start(success, failure);
+    withPermission(() => {
+      RNBackgroundGeolocation.start(success, failure);
+    }, failure);
   },
   stop: function(success, failure) {
     success = success || emptyFn;
@@ -85,7 +142,10 @@ var API = {
   startSchedule: function(success, failure) {
     success = success || emptyFn;
     failure = failure || emptyFn;
-    RNBackgroundGeolocation.startSchedule(success, failure);
+
+    withPermission(() => {
+      RNBackgroundGeolocation.startSchedule(success, failure);
+    }, failure);
   },
   stopSchedule: function(success, failure) {
     success = success || emptyFn;
@@ -95,7 +155,10 @@ var API = {
   startGeofences: function(success, failure) {
     success = success || emptyFn;
     failure = failure || emptyFn;
-    RNBackgroundGeolocation.startGeofences(success, failure);
+
+    withPermission(() => {
+      RNBackgroundGeolocation.startGeofences(success, failure);
+    }, failure);
   },
   onHttp: function(callback) {
     return EventEmitter.addListener("http", callback);
@@ -145,7 +208,7 @@ var API = {
   },
   // new
   getCurrentPosition: function(success, failure, options) {
-    var _success = emptyFn
+    var _success = emptyFn,
        _failure = emptyFn,
        _options = {};
 
@@ -163,7 +226,9 @@ var API = {
       _failure = failure || emptyFn;
       _options = options || {};
     }
-    RNBackgroundGeolocation.getCurrentPosition(_options, _success, _failure);
+    withPermission(() => {
+      RNBackgroundGeolocation.getCurrentPosition(_options, _success, _failure);
+    }, _failure);
   },
   watchPosition: function(success, failure, options) {
     if (typeof(failure) === 'object') {
@@ -172,8 +237,9 @@ var API = {
     }
     options = options || {};
     failure = failure || emptyFn;
-    RNBackgroundGeolocation.watchPosition(options, function() {
-      EventEmitter.addListener("watchposition", success);
+
+    withPermission(() => {
+      RNBackgroundGeolocation.watchPosition(options, function() { EventEmitter.addListener("watchposition", success); }, failure);
     }, failure);
   },
   stopWatchPosition: function(success, failure) {
@@ -210,7 +276,10 @@ var API = {
   setOdometer: function(value, success, failure) {
     success = success || emptyFn;
     failure = failure || emptyFn;
-    RNBackgroundGeolocation.setOdometer(value, success, failure);
+
+    withPermission(() => {
+      RNBackgroundGeolocation.setOdometer(value, success, failure);
+    }, failure);
   },
   resetOdometer: function(success, failure) {
     this.setOdometer(0, success, failure);
@@ -252,6 +321,45 @@ var API = {
     success = success || emptyFn;
     failure = failure || emptyFn;
     RNBackgroundGeolocation.emailLog(email, success, failure);
+  },
+  logger: {
+    error: function(msg) {
+      log('error', msg);
+    },
+    warn: function(msg) {
+      log('warn', msg);
+    },
+    debug: function(msg) {
+      log('debug', msg);
+    },
+    info: function(msg) {
+      log('info', msg);
+    },
+    notice: function(msg) {
+      log('notice', msg);
+    },
+    header: function(msg) {
+      log('header', msg);
+    },
+    on: function(msg) {
+      log('on', msg);
+    },
+    off: function(msg) {
+      log('off', msg);
+    },
+    ok: function(msg) {
+      log('ok', msg);
+    }
+  },
+  getSensors: function(success, failure) {
+    success = success || emptyFn;
+    failure = failure || emptyFn;
+    RNBackgroundGeolocation.getSensors(success, failure);
+  },
+  isPowerSaveMode: function(success, failure) {
+    success = success || emptyFn;
+    failure = failure || emptyFn;
+    RNBackgroundGeolocation.isPowerSaveMode(success, failure);
   },
   playSound: function(soundId) {
     RNBackgroundGeolocation.playSound(soundId);

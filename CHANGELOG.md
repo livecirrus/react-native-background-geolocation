@@ -1,5 +1,54 @@
 # Change Log
 
+## [2.9.4] - 2017-09-25
+- [Added] Re-build for iOS 11, XCode 9
+- [Added] Implement new `powersavechange` event in addition to `isPowerSaveMode` method for determining if OS "Power saving" mode is enabled.
+- [Added] New config `elasticityMultiplier` for controlling the scale of `distanceFilter` elasticity calculation.
+- [Fixed] Android bug not firing `schedule` Javascript listeners
+- [Fixed] Android crash `onGooglePlayServicesConnectdError` when Google Play Services needs to be updated on device.
+
+## [2.9.3] - 2017-09-15
+- [Changed] Refactor Android `onDestroy` mechanism attempting to solve nagging and un-reproducible null pointer exceptions.
+- [Added] Implement Android location permissions handling using `PermissionsAndroid` API.  You no longer need to use 3rd-party permissions module to obtain Android location permission.
+- [Fixed] Fixed bug not where `stopAfterElapsedMinutes` is not evaluated when executing `#getCurrentPosition`.
+- [Fixed] Modifications for Android O.  For now, `foregroundService: true` will be enforced when running on Android O (api 26).
+
+## [2.9.2] - 2017-08-21
+- [Changed] Reference latest `react-native-background-fetch` version `2.1.0`
+- [Added] Javascript API to plugin's logging system.
+- [Fixed] Minor issue with iOS flush where multiple threads might create multiple background-tasks, leaving some unfinished.
+
+## [2.9.0] - 2017-08-16
+- [Changed] Refactor iOS / Android core library event-subscription API.
+- [Added] Removing single event-listeners with `#removeListener` (alias `#un`) is snow fully supported!  There will no longer be warnings "No listeners for event X", since the plugin completely removes event-listeners from the core library.  You will no longer have to create `noop` event-listeners on events you're not using simply to suppress these warnings.
+
+## [2.8.5] - 2017-07-27
+- [Changed] Improve iOS/Android acquisition of `motionchange` location to ensure a recent location is fetched.
+- [Changed] Implement `#getSensors` method for both iOS & Android.  Returns an object indicating the presense of *accelerometer*, *gyroscope* and *magnetometer*.  If any of these sensors are missing, the motion-detection system for that device will poor.
+- [Changed] The `activitychange` success callback method signature has been changed from `{String} activityName` -> `{Object}` containing both `activityName` as well as `confidence`.  This event only used to fire after the `activityName` changed (eg: `on_foot` -> `in_vehicle`), regardless of `confidence`.  This event will now fire for *any* change in activity, including `confidence` changes.
+- [Changed] iOS `emailLog` will gzip the attached log file.
+- [Added] Implement new Android config `notificationPriority` for controlling the behaviour of the `foregroundService` notification and notification-bar icon.
+- [Changed] Tweak iOS Location Authorization to not show locationAuthorizationAlert if user initially denies location permission.
+- [Fixed] Android:  Remove isMoving condition from geofence proximity evaluator.
+- [Fixed] Android was creating a foreground notification even when `foregroundService: false`
+- [Fixed] iOS 11 fix:  Added new location-authorization string `NSLocationAlwaysAndWhenInUseUsageDescription`.  iOS 11 now requires location-authorization popup to allow user to select either `Always` or `WhenInUse`.
+
+## [2.8.4] -  2017-07-10
+- [Fixed] Android & iOS will ensure old location samples are ignored with `getCurrentPosition`
+- [Fixed] Android `providerchange` event would continue to persist a providerchange location even when plugin was disabled for the case where location-services is disabled by user.
+- [Fixed] Don't mutate iOS `url` to lowercase.  Just lowercase the comparison when checking for `301` redirects. 
+- [Changed] Android will attempt up to 5 `motionchange` samples instead of 3.  Cheaper devices can take longer to lock onto GPS.
+- [Changed] Android foregroundService notification priority set to `PRIORITY_MIN` so that notification doesn't always appear on top.
+- [Fixed] Android plugin was not nullifying the odometer reference location when `#stop` method is executed, resulting in erroneous odometer calculations if plugin was stopped, moved some distance then started again.
+- [Added] Android plugin will detect presense of Sensors `ACCELEROMETER`, `GYROSCOPE`, `MAGNETOMETER` and `SIGNIFICANT_MOTION`.  If any of these sensors are missing, the Android `ActivityRecognitionAPI` is considered non-optimal and plugin will add extra intelligence to assist determining when device is moving.
+- [Fixed] Bug in broadcast event `GEOFENCE` not being fired when `MainActivity` is terminated (only applies to those use `HeadlessJS`).
+- [Added] Implement Javascript API for `removeAllListeners` for...you guessed it:  removing all event-listeners.
+- [Fixed] Android scheduler issue when device is rebooted and plugin is currently within a scheduled ON period (fails to start)
+- [Fixed] (Android) Fix error calling `stopWatchPosition` before `#configure` callback has executed.  Also add support for executing `#getCurrentPosition` before `#configure` callback has fired.
+- [Added] (Android) Listen to LocationResult while stopTimeout is engaged and perform manual motion-detection by checking if location distance from stoppedAtLocation is > stationaryRadius
+- [Fixed] Bug in literal schedule parsing for both iOS and Android
+- [Fixed] Bug in Android scheduler after app terminated.  Configured schedules were not having their `onTime` and `offTime` zeroed, resulting in incorrect time comparison.
+
 ## [2.8.3] - 2017-06-15
 - [Fixed] Bug in Android scheduler after app terminated.  Configured schedules were not having their `SECOND` and `MILLISECOND` zeroed resulting in incorrect time comparison.
 

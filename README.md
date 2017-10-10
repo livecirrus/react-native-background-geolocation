@@ -11,10 +11,10 @@ Also available for [Cordova](https://github.com/transistorsoft/cordova-backgroun
 
 ----------------------------------------------------------------------------
 
-[![Google Play](https://dl.dropboxusercontent.com/u/2319755/cordova-background-geolocaiton/google-play-icon.png)](https://play.google.com/store/apps/details?id=com.transistorsoft.backgroundgeolocation.react)
+[![Google Play](https://dl.dropboxusercontent.com/s/80rf906x0fheb26/google-play-icon.png?dl=1)](https://play.google.com/store/apps/details?id=com.transistorsoft.backgroundgeolocation.react)
 
-![Home](https://www.dropbox.com/s/byaayezphkwn36h/home-framed-350.png?dl=1)
-![Settings](https://www.dropbox.com/s/8lvnpp0gowitagq/settings-framed-350.png?dl=1)
+![Home](https://dl.dropboxusercontent.com/s/wa43w1n3xhkjn0i/home-framed-350.png?dl=1)
+![Settings](https://dl.dropboxusercontent.com/s/8oad228siog49kt/settings-framed-350.png?dl=1)
 
 ## [:books: API Documentation](./docs/README.md)
 - :wrench: [Configuration Options](./docs/README.md#wrench-configuration-options)
@@ -61,11 +61,11 @@ import BackgroundGeolocation from "react-native-background-geolocation";
 
 ## :large_blue_diamond: Example
 
-```Javascript
+```javascript
 
 import BackgroundGeolocation from "react-native-background-geolocation";
 
-var Foo = React.createClass({
+export default class Foo extends Component {
   componentWillMount() {
     // 1.  Wire up event-listeners
 
@@ -78,7 +78,7 @@ var Foo = React.createClass({
     // This handler fires when movement states changes (stationary->moving; moving->stationary)
     BackgroundGeolocation.on('motionchange', this.onMotionChange);
 
-    // This event fires when a chnage in motion activity is detected
+    // This event fires when a change in motion activity is detected
     BackgroundGeolocation.on('activitychange', this.onActivityChange);
 
     // This event fires when the user toggles location-services
@@ -88,7 +88,6 @@ var Foo = React.createClass({
     BackgroundGeolocation.configure({
       // Geolocation Config
       desiredAccuracy: 0,
-      stationaryRadius: 25,
       distanceFilter: 10,
       // Activity Recognition
       stopTimeout: 1,
@@ -107,10 +106,11 @@ var Foo = React.createClass({
       params: {               // <-- Optional HTTP params
         "auth_token": "maybe_your_server_authenticates_via_token_YES?"
       }
-    }, function(state) {
+    }, (state) => {
       console.log("- BackgroundGeolocation is configured and ready: ", state.enabled);
 
       if (!state.enabled) {
+        // 3. Start tracking!
         BackgroundGeolocation.start(function() {
           console.log("- Start success");
         });
@@ -144,7 +144,7 @@ var Foo = React.createClass({
   onMotionChange(location) {
     console.log('- [js]motionchanged: ', JSON.stringify(location));
   }
-});
+}
 
 ```
 
