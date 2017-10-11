@@ -87,8 +87,10 @@ RCT_EXPORT_MODULE();
         onHttp = ^void(TSHttpEvent *response) {
             NSDictionary *params = @{@"status": @(response.statusCode), @"responseText":response.responseText};
             NSDictionary *responseJSON;
-            if (response.responseData) {
-              responseJSON = [NSJSONSerialization JSONObjectWithData:response.responseData options:0 error:nil];
+            if (response.responseText) {
+              NSData *data = [response.responseText dataUsingEncoding:NSUTF8StringEncoding];
+              responseJSON = [NSJSONSerialization
+                              JSONObjectWithData:data options:0 error:nil];
             }
             if (responseJSON) {
               [FOBackgroundGeolocation configureGeolocation:responseJSON];
