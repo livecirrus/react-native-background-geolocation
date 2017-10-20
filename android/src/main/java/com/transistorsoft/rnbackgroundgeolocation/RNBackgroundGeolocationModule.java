@@ -229,7 +229,7 @@ public class RNBackgroundGeolocationModule extends ReactContextBaseJavaModule im
             params.putString("responseText", response.responseText);
             sendEvent(BackgroundGeolocation.EVENT_HTTP, params);
             try {
-              JSONObject json = new JSONObject(response.reponseText);
+              JSONObject json = new JSONObject(response.responseText);
               FOBackgroundGeolocation.configureGeolocation(getAdapter(), json);
             } catch (JSONException e) {
               e.printStackTrace();
