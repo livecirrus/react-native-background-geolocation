@@ -975,7 +975,7 @@ public class RNBackgroundGeolocationModule extends ReactContextBaseJavaModule im
         }
         return jsonArray;
     }
-
+    
     // TODO placehold for implementing Android M permissions request.  Just return true for now.
     private Boolean hasPermission(String permission) {
         return true;

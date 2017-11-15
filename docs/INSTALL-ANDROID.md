@@ -1,16 +1,16 @@
 # Android Manual Installation
 
 ```bash
-$ npm install --save react-native-background-geolocation
+$ npm install git+https://git@github.com:transistorsoft/react-native-background-geolocation-android.git --save
 ```
 
 ## Gradle Configuration
 
-:open_file_folder: **`android/settings.gradle`**
+* :open_file_folder: **`android/settings.gradle`**
 
 ```diff
 +include ':react-native-background-geolocation'
-+project(':react-native-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-background-geolocation/android')
++project(':react-native-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-background-geolocation-android/android')
 ```
 
 * :open_file_folder: **`android/build.gradle`**
@@ -33,35 +33,47 @@ allprojects {
 }
 ```
 
-:open_file_folder: **`android/app/build.gradle`**
+
+* :open_file_folder: **`android/app/build.gradle`**
 
 ```diff
+android {
+    // BackgroundGeolocation REQUIRES SDK >=26 for new features in Android 8
++   compileSdkVersion 26
+    // Use latest available buildToolsVersion
++   buildToolsVersion "26.0.2"
+    .
+    .
+    .
+}
+.
+.
+.
 +repositories {
 +   flatDir {
-+       dirs "../../node_modules/react-native-background-geolocation/android/libs"
++       dirs "../../node_modules/react-native-background-geolocation-android/android/libs"
 +   }
 +}
 
 dependencies {
 +   compile project(':react-native-background-geolocation')
 +   compile(name: 'tslocationmanager', ext: 'aar')
++   compile "com.android.support:appcompat-v7:26.1.0"  // Or later
 }
 ```
 
-:information_source: If you have a different play serivces than the one included in this library, use the following instead (switch **`11.2.0`** for the desired version):
+If you have a different version of play-services than the one included in this library, or you're experiencing gradle conflicts from other libraries using a *different* version of play-services, use the following instead (switch `11.2.0` for the desired version):
 
-:warning: The plugin requires a minimum play-services version of **`11.2.0`**.
-
-```
-compile(project(':react-native-background-geolocation')) {
-  exclude group: 'com.google.android.gms', module: 'play-services-location'
+```diff
+compile(project(':react-native-background-geolocation')) {    
++   exclude group: 'com.google.android.gms', module: 'play-services-location'
 }
-compile 'com.google.android.gms:play-services-location:11.2.0'
+// Apply your desired play-services version here
++compile 'com.google.android.gms:play-services-location:11.2.0'
 ```
+
 
 ## AndroidManifest.xml
-
-:open_file_folder: **`android/app/src/main/AndroidManifest.xml`**
 
 ```diff
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -84,11 +96,10 @@ compile 'com.google.android.gms:play-services-location:11.2.0'
 
 ```
 
-:information_source: [Purchase a License](http://www.transistorsoft.com/shop/products/react-native-background-geolocation)
 
 ## MainApplication.java
 
-:open_file_folder: **`android/app/main/java/com/.../MainApplication.java`**
+* **`MainApplication.java`** (`android/app/main/java/com/.../MainApplication.java`)
 
 ```diff
 +import com.transistorsoft.rnbackgroundgeolocation.*;
@@ -104,21 +115,14 @@ public class MainApplication extends ReactApplication {
 ```
 
 ## Proguard Config
-
-:open_file_folder: **`android/app/proguard-rules.pro`**
+* In your `proguard-rules.pro` (`android/app/proguard-rules.pro`)
 
 ```proguard
 # BackgroundGeolocation
 -keep class com.transistorsoft.** { *; }
 -dontwarn com.transistorsoft.**
 
-# OkHttp
--dontwarn okio.**
-
 # BackgroundGeolocation (EventBus)
--keepclassmembers class * extends de.greenrobot.event.util.ThrowableFailureEvent {
-    <init>(java.lang.Throwable);
-}
 -keepattributes *Annotation*
 -keepclassmembers class ** {
     @org.greenrobot.eventbus.Subscribe <methods>;
@@ -132,4 +136,8 @@ public class MainApplication extends ReactApplication {
 -keep class ch.qos.** { *; }
 -keep class org.slf4j.** { *; }
 -dontwarn ch.qos.logback.core.net.*
+
+
+# OkHttp3
+-dontwarn okio.**
 ```

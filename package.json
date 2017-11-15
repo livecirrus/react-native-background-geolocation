@@ -1,13 +1,13 @@
 {
-  "name": "react-native-background-geolocation",
+  "name": "react-native-background-geolocation-android",
   "version": "2.10.1",
-  "description": "The most sophisticated cross-platform background location-tracking & geofencing module with battery-conscious motion-detection intelligence",  
+  "description": "The most sophisticated background location tracking & geofencing module with battery-conscious motion-detection",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/transistorsoft/react-native-background-geolocation.git"
+    "url": "git+ssh://git@github.com/transistorsoft/react-native-background-geolocation-android.git"
   },
   "keywords": [
     "react-native",
@@ -15,20 +15,17 @@
     "ios",
     "android",
     "background",
-    "geolocation",
-    "tracking",
-    "geofence",
-    "geofencing"
+    "geolocation"
   ],
   "author": "Chris Scott <chris@transistorsoft.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/transistorsoft/react-native-background-geolocation/issues"
+    "url": "https://github.com/transistorsoft/react-native-background-geolocation-android/issues"
   },
   "rnpm": {
     "commands": {
-      "postlink": "node_modules/react-native-background-geolocation/scripts/postlink.js",
-      "postunlink": "node_modules/react-native-background-geolocation/scripts/postunlink.js"
+      "postlink": "node_modules/react-native-background-geolocation-android/scripts/postlink.js",
+      "postunlink": "node_modules/react-native-background-geolocation-android/scripts/postunlink.js"
     },
     "ios": {
       "sharedLibraries": [
@@ -37,12 +34,13 @@
       ]
     }
   },
-  "homepage": "https://transistorsoft.github.io/react-native-background-geolocation",
-  "peerDependencies": {
-    "react-native": ">=0.28.0"
-  },
+  "homepage": "https://transistorsoft.github.io/react-native-background-geolocation-android",
   "dependencies": {
     "react-native-background-fetch":"~2.2.0",
     "cocoa-lumberjack":"^3.0.3"
-  }
+  },
+  "peerDependencies": {
+    "react-native": ">=0.36.0"
+  },
+  "devDependencies": {}
 }

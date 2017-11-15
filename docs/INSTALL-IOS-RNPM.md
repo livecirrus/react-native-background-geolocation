@@ -1,13 +1,13 @@
-# iOS Installation with `react-native link`
+# iOS Installation with rnpm
 
 ```shell
-$ npm install --save react-native-background-geolocation
+$ npm install git+https://git@github.com:transistorsoft/react-native-background-geolocation-android.git --save
 ```
 
 #### With React Native 0.27+
 
 ```shell
-react-native link react-native-background-geolocation
+react-native link react-native-background-geolocation-android
 react-native link react-native-background-fetch
 react-native link cocoa-lumberjack
 ```

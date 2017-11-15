@@ -1,7 +1,7 @@
 # iOS Installation with CocoaPods
 
 ```shell
-$ npm install --save react-native-background-geolocation
+$ npm install git+https://git@github.com:transistorsoft/react-native-background-geolocation-android.git --save
 ```
 
 If you use already [CocoaPods](https://cocoapods.org/) in your react-native
@@ -17,7 +17,7 @@ platform :ios, '8.0'
 
 #use_frameworks!  # <-- comment this out!
 pod 'React', :path => '../node_modules/react-native'
-pod 'RNBackgroundGeolocation', :path => '../node_modules/react-native-background-geolocation'
+pod 'RNBackgroundGeolocation', :path => '../node_modules/react-native-background-geolocation-android'
 pod 'RNBackgroundFetch', :path => '../node_modules/react-native-background-fetch'
 ```
 
@@ -41,11 +41,12 @@ $ pod install
 
 ![](https://dl.dropboxusercontent.com/s/a4xieyd0h38xklu/Screenshot%202016-09-22%2008.12.51.png?dl=1)
 
-- Edit **`Info.plist`**.  Add the following items (Set **Value** as desired):
+- Edit **`Info.plist`**.  Add the following items (Set **Value** as desired): 
 
 | Key | Value | Description |
-|---|---|---|
-| NSLocationAlwaysUsageDescription | This app requires background tracking | The value here will be presented to the user when the plugin requests **Background Location** permission |
+|-----|-------|-------------|
+| NSLocationAlwaysUsageDescription | This app requires background tracking | **Deprecated in iOS 11** The value here will be presented to the user when the plugin requests **Background Location** permission | 
+| NSLocationAlwaysAndWhenInUseUsageDescription | This app requires background tracking | **New for iOS 11** The value here will be presented to the user when the plugin requests **Background Location** permission | 
 | NSMotionUsageDescription | Accelerometer use increases battery efficiency by intelligently toggling location-tracking | The value here will be presented to the user when the app requests **Motion Activity** permission.|
 
 ![](https://dl.dropboxusercontent.com/s/j7udsab7brlj4yk/Screenshot%202016-09-22%2008.33.53.png?dl=1)
@@ -73,20 +74,10 @@ your `Podfile`. Here is a complete working example if you want add your Podfile
 in the project root while your generated Xcode project is still in the `ios`
 folder:
 
-Newer versions of react-native might give you error of a missing `Yoga` dependency.
-```
-Unable to satisfy the following requirements:
-
-- `Yoga (= 0.44.0.React)` required by `React/Core (0.44.0)`
-
-None of your spec sources contain a spec satisfying the dependency: `Yoga (= 0.44.0.React)`.
-```
-To solve this, just include the path to the `Yoga` pod.
-
 ```Ruby
 platform :ios, '8.0'
-# pod 'Yoga', :path => '../node_modules/react-native/ReactCommon/yoga' <-- uncomment to solve Yoga error
+
 pod 'React', :path => '../node_modules/react-native'
-pod 'RNBackgroundGeolocation', :path => '../node_modules/react-native-background-geolocation'
+pod 'RNBackgroundGeolocation', :path => '../node_modules/react-native-background-geolocation-android'
 pod 'RNBackgroundFetch', :path => '../node_modules/react-native-background-fetch'
 ```

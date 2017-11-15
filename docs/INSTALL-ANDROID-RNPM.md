@@ -1,13 +1,13 @@
-# Android Installation with `react-native link`
+# Android RNPM Installation
 
 ```shell
-$ npm install --save react-native-background-geolocation
+npm install git+https://git@github.com:transistorsoft/react-native-background-geolocation-android.git --save
 ```
 
 #### With React Native 0.27+
 
 ```shell
-react-native link react-native-background-geolocation
+react-native link react-native-background-geolocation-android
 ```
 
 #### With older versions of React Native
@@ -15,12 +15,12 @@ react-native link react-native-background-geolocation
 You need [`rnpm`](https://github.com/rnpm/rnpm) (`npm install -g rnpm`)
 
 ```shell
-rnpm link react-native-background-geolocation
+rnpm link react-native-background-geolocation-android
 ```
 
 ## Gradle Configuration
 
-RNPM does a nice job, but we need to do a bit of manual setup.
+react-native link does a nice job, but we need to do a bit of manual setup.
 
 * :open_file_folder: **`android/build.gradle`**
 
@@ -33,33 +33,32 @@ allprojects {
             // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
             url "$rootDir/../node_modules/react-native/android"
         }
-        // Google now hosts their latest API dependencies on their own maven  server.  
+        // Google now hosts their latest API dependencies on their own maven server.  
         // React Native will eventually add this to their app template.
-+        maven {
-+            url 'https://maven.google.com'
-+        }
++       maven {
++           url 'https://maven.google.com'
++       }
     }
 }
 ```
 
-:open_file_folder: **`android/app/build.gradle`**
+* :open_file_folder: **`android/app/build.gradle`**
 
 ```diff
 +repositories {
 +   flatDir {
-+       dirs "../../node_modules/react-native-background-geolocation/android/libs"
++       dirs "../../node_modules/react-native-background-geolocation-android/android/libs"
 +   }
 +}
 
 dependencies {
 +   compile(name: 'tslocationmanager', ext: 'aar')
++   compile "com.android.support:appcompat-v7:26.1.0"  // Or later
 }
 ```
 
 
 ## AndroidManifest.xml
-
-:open_file_folder: **`android/app/src/main/AndroidManifest.xml`**
 
 ```diff
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -82,21 +81,14 @@ dependencies {
 
 ```
 
-:information_source: [Purchase a License](http://www.transistorsoft.com/shop/products/react-native-background-geolocation)
 
 ## Proguard Config
-
-:open_file_folder: **`android/app/proguard-rules.pro`**
+* In your `proguard-rules.pro` (`android/app/proguard-rules.pro`)
 
 ```proguard
 # BackgroundGeolocation lib tslocationmanager.aar is *already* proguarded
 -keep class com.transistorsoft.** { *; }
 -dontwarn com.transistorsoft.**
-
--keep class com.google.**
--dontwarn com.google.**
--dontwarn org.apache.http.**
--dontwarn com.android.volley.toolbox.**
 
 # BackgroundGeolocation (EventBus)
 -keepclassmembers class * extends de.greenrobot.event.util.ThrowableFailureEvent {
@@ -115,5 +107,8 @@ dependencies {
 -keep class ch.qos.** { *; }
 -keep class org.slf4j.** { *; }
 -dontwarn ch.qos.logback.core.net.*
+
+# OkHttp3
+-dontwarn okio.**
 ```
 

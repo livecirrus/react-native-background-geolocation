@@ -1223,7 +1223,7 @@ If you set this option to **`true`**, the plugin will run its Android service in
 
 When running the service with [`foregroundService: true`](#config-boolean-foregroundservice-false), Android requires a persistent notification in the Notification Bar.  This will control the **priority** of that notification as well as the position of the notificaiton-bar icon.
 
-:information_source: To completely **hide** the icon in the notification-bar, use `NOTIFICATION_PRIORITY_MIN`
+:information_source: To completely **hide** the icon in the notification-bar, use `NOTIFICATION_PRIORITY_MIN` (:warning: **It is no longer possible to hide the notification-bar icon in Android O**)
 
 The following `notificationPriority` values defined as **constants** on the `BackgroundGeolocation` object:
 
@@ -1713,7 +1713,7 @@ BackgroundGeolocation.configure({
 })
 ```
 
-:information_source: BackgroundGeolocation persists its **`enabled`** state between application terminate or device reboot and **`#configure`** will **automatically** [`#start`](#startsuccessfn-failurefn) tracking if it finds **`enabled == true`**.  However, there's no harm in calling [`#start`](#startsuccessfn-failurefn) while the plugin is already **`enabled`**, *before* your **`successFn`** is executed.
+:information_source: BackgroundGeolocation persists its **`enabled`** state between application terminate or device reboot and **`#configure`** will **automatically** [`#start`](startsuccessfn-failurefn) tracking if it finds **`enabled == true`**.  However, there's no harm in calling [`#start`](startsuccessfn-failurefn) while the plugin is already **`enabled`**, *before* your **`successFn`** is executed.
 
 :warning: You should not execute **any** of the plugin's API methods (other than adding event-listeners with [`#on`](#zap-events) until your **`successFn`** executes.  For example:
 
@@ -2007,14 +2007,14 @@ onAppSuspend() {
 
 ```
 
-:information_source: Also see [`#stopWatchPosition`](#stopwatchpositionsuccessfn-failurefn)
+:information_source: Also see [`#stopWatchPosition`](stopwatchpositionsuccessfn-failurefn)
 
 ------------------------------------------------------------------------------
 
 
 ### `stopWatchPosition(successFn, failureFn)`
 
-Halt [`#watchPosition`](#watchpositionsuccessfn-failurefn-options) updates.
+Halt [`#watchPosition`](watchpositionsuccessfn-failurefn-options) updates.
 
 ```javascript
 BackgroundGeolocation.stopWatchPosition();  // <-- callbacks are optional
@@ -2045,7 +2045,7 @@ BackgroundGeolocation.getOdometer(function(distance) {
 });
 ```
 
-:information_source: Also see [`desiredOdometerAccuracy`](#config-integer-desiredodometeraccuracy-100) to set discard poor accuracy locations being used in odometer calculations.
+:information_source: Also see [`desiredOdometerAccuracy`](config-integer-desiredodometeraccuracy-100) to set discard poor accuracy locations being used in odometer calculations.
 
 :warning: Odometer calculations are dependant upon the accuracy of received locations.  If location accuracy is poor, this will necessarily introduce error into odometer calculations.
 
@@ -2618,24 +2618,6 @@ None
 BackgroundGeolocation.emailLog("foo@bar.com");
 ```
 
-**Android:**  
-
-1. The following permissions are required in your `AndroidManifest.xml` in order to attach the `.log` file to the email:
-
-```xml
-<manifest>
-  <application>
-  ...
-  </application>
-
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-</manifest>
-```
-
-2. Grant "Storage" permission `Settings->Apps->[Your App]->Permissions: (o) Storage`
-
-![](https://dl.dropboxusercontent.com/s/mqfx11u15vbe3ed/screenshot-android-app-permissions.png?dl=1)
 
 ### `destroyLog(successFn, failureFn)`
 
